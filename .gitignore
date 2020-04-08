@@ -2,10 +2,12 @@
 # Created by https://www.gitignore.io/api/vim,python,visualstudiocode
 # Edit at https://www.gitignore.io/?templates=vim,python,visualstudiocode
 
-data/
+
+data/*
 !data/README.md
-models/
-!data/README.md
+
+models/*
+!models/README.md
 
 ### JupyterNotebooks ###
 # gitignore template for Jupyter Notebooks
