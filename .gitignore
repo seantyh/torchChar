@@ -2,6 +2,23 @@
 # Created by https://www.gitignore.io/api/vim,python,visualstudiocode
 # Edit at https://www.gitignore.io/?templates=vim,python,visualstudiocode
 
+data/
+!data/README.md
+models/
+!data/README.md
+
+### JupyterNotebooks ###
+# gitignore template for Jupyter Notebooks
+# website: http://jupyter.org/
+
+.ipynb_checkpoints
+*/.ipynb_checkpoints/*
+
+# IPython
+profile_default/
+ipython_config.py
+
+
 ### Python ###
 # Byte-compiled / optimized / DLL files
 __pycache__/
