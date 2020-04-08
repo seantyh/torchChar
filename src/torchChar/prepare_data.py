@@ -24,7 +24,7 @@ class InputExample:
         self.radical = character.radical
         self.zhuyin = character.zhuyin
         syllable = self.parse_cv(character.zhuyin)
-        self.constant, self.vowel, self.tone = syllable
+        self.consonant, self.vowel, self.tone = syllable
         self.font_family = font_family.name
         self.bitmap = self.generate_bitmap(self.title, font_family)
     
@@ -32,13 +32,13 @@ class InputExample:
         return f"<InputExample[{self.font_family}]: {self.title}({self.zhuyin})>"
 
     def parse_cv(self, zhuyin):
-        constant = re.findall("ㄅㄆㄇㄈㄉㄊㄋㄌㄍㄎㄏㄐㄑㄒㄓㄔㄕㄖㄗㄘㄙ", zhuyin)
+        constant = re.findall("[ㄅㄆㄇㄈㄉㄊㄋㄌㄍㄎㄏㄐㄑㄒㄓㄔㄕㄖㄗㄘㄙ]", zhuyin)
         vowel = re.findall("[ㄚㄛㄝㄜㄞㄟㄠㄡㄢㄣㄤㄥㄦㄧㄨㄩ]+", zhuyin)
-        tone = re.findall(z.marks, zhuyin)
-        constant = constant if constant else None
-        vowel = vowel if vowel else None
-        tone = tone if tone else None
-        return constant, vowel, tone
+        tone = re.findall(f"[{z.marks}]", zhuyin)
+        consonant = constant[0] if constant else None
+        vowel = vowel[0] if vowel else None
+        tone = tone[0] if tone else '-'        
+        return consonant, vowel, tone
     
     def generate_bitmap(self, title, font_family):
         im = text2bitmap(self.title, im_dim=(64,64), font_family=font_family)
