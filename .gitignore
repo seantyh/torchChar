@@ -9,6 +9,8 @@ data/*
 models/*
 !models/README.md
 
+**/lightning_logs/
+
 ### JupyterNotebooks ###
 # gitignore template for Jupyter Notebooks
 # website: http://jupyter.org/
