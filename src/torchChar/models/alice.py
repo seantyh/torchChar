@@ -128,7 +128,8 @@ class AliceModel(LightningModule):
         return out_dict
 
     def compute_metric(self, y_true, y_score, prefix):        
-        y_pred = y_score.argmax(axis=1)
+        y_pred = y_score.argmax(axis=1).cpu()
+        y_true = y_true.cpu()
         acc = accuracy_score(y_true, y_pred)
         recall = recall_score(y_true, y_pred, average='micro')
         precision = precision_score(y_true, y_pred, average='micro')

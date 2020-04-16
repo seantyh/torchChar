@@ -9,6 +9,8 @@ logging.basicConfig(level="DEBUG", format="[%(levelname)s] %(name)s: %(message)s
 parser = ArgumentParser(description="training entry point")
 
 parser.add_argument("--lr", default="1e-4")
+parser.add_argument("--use-cuda", action="store_true")
+parser.add_argument("--debug", action="store_true")
 
 if __name__ == "__main__":
     n_radicals = len(torchChar.Radicals())
@@ -19,6 +21,8 @@ if __name__ == "__main__":
     args = parser.parse_args()
     model = torchChar.AliceModel(n_radicals, 
                 n_consonants, n_vowels, n_tones, **vars(args))
-    trainer = Trainer(max_epochs=10)
+    
+    use_cuda = 1 if args.use_cuda else None
+    trainer = Trainer(max_epochs=10, gpus=use_cuda, fast_dev_run=args.debug)
     trainer.fit(model)
 
