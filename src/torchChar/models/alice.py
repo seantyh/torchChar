@@ -133,7 +133,11 @@ class AliceModel(LightningModule):
         self.clogger.info("validation results: %s\n", pformat(results))
         out_dict = {
             'progress_bar': {'val_loss': results["val_loss"]},
-            'log': {'val_loss': results["val_loss"]}
+            'log': {'val_loss': results["val_loss"],
+                    'radicals_accuracy': results["radicals_accuracy"],
+                    'consonants_accuracy': results["consonants_accuracy"], 
+                    'vowels_accuracy': results["vowels_accuracy"],
+                    'tones_accuracy': results["tones_accuracy"]}
         }
         return out_dict
 
