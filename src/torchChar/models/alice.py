@@ -85,10 +85,10 @@ class AliceModel(LightningModule):
         tones = batch[4]
 
         pred_rs, pred_cs, pred_vs, pred_ts = self(bitmaps)
-        r_loss = F.cross_entropy(pred_rs, radicals)
-        c_loss = F.cross_entropy(pred_cs, consonants)
-        v_loss = F.cross_entropy(pred_vs, vowels)
-        t_loss = F.cross_entropy(pred_ts, tones)
+        r_loss = F.cross_entropy(pred_rs, radicals, reduction='sum')
+        c_loss = F.cross_entropy(pred_cs, consonants, reduction='sum')
+        v_loss = F.cross_entropy(pred_vs, vowels, reduction='sum')
+        t_loss = F.cross_entropy(pred_ts, tones, reduction='sum')
 
         loss = r_loss + c_loss + t_loss + v_loss
 
