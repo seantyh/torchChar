@@ -147,10 +147,22 @@ def convert_examples_to_features(examples: List[InputExample]):
         features.append(feature)
     return features
 
-def load_and_cache_features(mode):
+def subset_characters(ex_iter, subset:str):
+    cf_path = get_data_dir() / "resources/as_chFreq.pickle"    
+    with cf_path.open("rb") as fin:
+        as_cfreq = pickle.load(fin)
+
+    if subset == "all":
+        return ex_iter
+    elif subset == "as":
+        return filter(lambda x: x.title in as_cfreq, ex_iter)
+    else:
+        raise ValueError(f"Unsupported subset: {subset}")
+
+def load_and_cache_features(mode, subset="all"):
     cache_dir = get_data_dir() / "training_data"
     cache_dir.mkdir(exist_ok=True, parents=True)
-    cache_file_path = cache_dir / f"cache_features_{mode}.pkl"
+    cache_file_path = cache_dir / f"cache_features_{subset}_{mode}.pkl"
 
     if cache_file_path.exists():
         with cache_file_path.open("rb") as fin:
@@ -165,7 +177,8 @@ def load_and_cache_features(mode):
                 examples.append(pickle.load(fin))
         
         example_iter = chain.from_iterable(examples)
-        dataset_iter = split_dataset(example_iter, mode)
+        subset_iter = subset_characters(example_iter, subset)
+        dataset_iter = split_dataset(subset_iter, mode)
         features = convert_examples_to_features(dataset_iter)
         with cache_file_path.open("wb") as fout:
             pickle.dump(features, fout)

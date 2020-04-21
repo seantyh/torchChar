@@ -35,8 +35,8 @@ class InputExample:
         constant = re.findall("[ㄅㄆㄇㄈㄉㄊㄋㄌㄍㄎㄏㄐㄑㄒㄓㄔㄕㄖㄗㄘㄙ]", zhuyin)
         vowel = re.findall("[ㄚㄛㄝㄜㄞㄟㄠㄡㄢㄣㄤㄥㄦㄧㄨㄩ]+", zhuyin)
         tone = re.findall(f"[{z.marks}]", zhuyin)
-        consonant = constant[0] if constant else None
-        vowel = vowel[0] if vowel else None
+        consonant = constant[0] if constant else "<X>"
+        vowel = vowel[0] if vowel else "<X>"
         tone = tone[0] if tone else '-'        
         return consonant, vowel, tone
     
