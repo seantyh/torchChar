@@ -92,8 +92,15 @@ class AliceModel(LightningModule):
 
         loss = r_loss + c_loss + t_loss + v_loss
 
-        return {'loss': loss, 'log':{"train_loss": loss}}
+        return {'loss': loss}
 
+    def training_epoch_end(self, outputs):
+        if len(outputs) == 0:
+            return {}
+        training_loss = sum(x['loss'].item() for x in outputs) / len(outputs)
+
+        return {"log": {"training_loss": training_loss}}
+        
     def val_dataloader(self):
         dataset = load_and_cache_features("dev", subset=self.hparams.subset)
         return DataLoader(dataset, batch_size=8, shuffle=True)
@@ -132,6 +139,7 @@ class AliceModel(LightningModule):
 
         self.clogger.info("validation results: %s\n", pformat(results))
         out_dict = {
+            'val_loss': results['val_loss'],
             'progress_bar': {'val_loss': results["val_loss"]},
             'log': {'val_loss': results["val_loss"],
                     'radicals_accuracy': results["radicals_accuracy"],
