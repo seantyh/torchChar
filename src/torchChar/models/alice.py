@@ -10,12 +10,15 @@ from pytorch_lightning import LightningModule
 from sklearn.metrics import accuracy_score, f1_score, recall_score, precision_score
 from ..features import load_and_cache_features
 
+
 class AliceModel(LightningModule):
     def __init__(self, hparams):
         super(AliceModel, self).__init__()
         self.lr = float(hparams.lr)
         self.clogger = logging.getLogger("AliceModel")
-        self.hparams = hparams        
+        self.hparams = hparams
+        self.hooks = {}
+        self.layer_outputs = {}
 
         # define convolution layers
         self.conv1 = nn.Conv2d(1, hparams.n_c1, 3, padding=1)
@@ -26,7 +29,7 @@ class AliceModel(LightningModule):
 
         # define fully-connected
 
-        self.fc1 = nn.Linear(hparams.n_c3*16*16, hparams.n_fc1)
+        self.fc1 = nn.Linear(hparams.n_c3 * 16 * 16, hparams.n_fc1)
         self.fc2 = nn.Linear(hparams.n_fc1, hparams.n_fc2)
         self.fc3 = nn.Linear(hparams.n_fc2, hparams.n_fc3)
         self.fc_radicals = nn.Linear(hparams.n_fc2, hparams.n_radicals)
@@ -45,13 +48,27 @@ class AliceModel(LightningModule):
         parser.add_argument('--n_fc3', type=int, default=200, help='dimension of fc3')
         return parser
 
+    def register_output_hook(self, layer_name):
+        if not hasattr(self, layer_name):
+            return
+
+        if layer_name in self.hooks:
+            self.hooks[layer_name].remove()
+
+        def output_hook(module, input, output):
+            self.layer_outputs[layer_name] = output
+
+        layer = getattr(self, layer_name)
+        handle = layer.register_forward_hook(output_hook)
+        self.hooks[layer_name] = handle
+
     def forward(self, bitmaps):
-        assert tuple(bitmaps.shape[-2:]) == (64,64)
+        assert tuple(bitmaps.shape[-2:]) == (64, 64)
         x = bitmaps.unsqueeze(1).float()
         h = self.conv1(x)
         h = F.relu(self.pool1(h))
-        h = F.relu(self.conv2(h))   
-        h = self.pool2(h)     
+        h = F.relu(self.conv2(h))
+        h = self.pool2(h)
         h = F.relu(self.conv3(h))
 
         v1 = self.fc1(h.view(-1, self.fc1.in_features))
@@ -100,7 +117,7 @@ class AliceModel(LightningModule):
         training_loss = sum(x['loss'].item() for x in outputs) / len(outputs)
 
         return {"log": {"training_loss": training_loss}}
-        
+
     def val_dataloader(self):
         dataset = load_and_cache_features("dev", subset=self.hparams.subset)
         return DataLoader(dataset, batch_size=8, shuffle=True)
@@ -143,7 +160,7 @@ class AliceModel(LightningModule):
             'progress_bar': {'val_loss': results["val_loss"]},
             'log': {'val_loss': results["val_loss"],
                     'radicals_accuracy': results["radicals_accuracy"],
-                    'consonants_accuracy': results["consonants_accuracy"], 
+                    'consonants_accuracy': results["consonants_accuracy"],
                     'vowels_accuracy': results["vowels_accuracy"],
                     'tones_accuracy': results["tones_accuracy"]}
         }
@@ -157,7 +174,9 @@ class AliceModel(LightningModule):
         precision = precision_score(y_true, y_pred, average='micro')
         f1 = f1_score(y_true, y_pred, average='micro')
 
-        return {f"{prefix}_accuracy": torch.tensor(acc),
-                f"{prefix}_recall": torch.tensor(recall),
-                f"{prefix}_precision": torch.tensor(precision),
-                f"{prefix}_f1": torch.tensor(f1)}
+        return {
+            f"{prefix}_accuracy": torch.tensor(acc),
+            f"{prefix}_recall": torch.tensor(recall),
+            f"{prefix}_precision": torch.tensor(precision),
+            f"{prefix}_f1": torch.tensor(f1)
+        }
